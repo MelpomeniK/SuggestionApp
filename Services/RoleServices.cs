@@ -84,5 +84,10 @@ namespace SuggestionApp.Services
                 return false;
             }
         }
+
+        public async Task<int> GetManagerCountAsync()
+        {
+            return await _context.Roles.CountAsync(r => r.IsManager == true);
+        }
     }
 }

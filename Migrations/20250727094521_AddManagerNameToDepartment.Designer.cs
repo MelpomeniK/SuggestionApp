@@ -3,6 +3,7 @@ using System;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 using SuggestionApp.Data;
 
@@ -11,9 +12,11 @@ using SuggestionApp.Data;
 namespace SuggestionApp.Migrations
 {
     [DbContext(typeof(AppDbContext))]
-    partial class AppDbContextModelSnapshot : ModelSnapshot
+    [Migration("20250727094521_AddManagerNameToDepartment")]
+    partial class AddManagerNameToDepartment
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        /// <inheritdoc />
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder
@@ -71,12 +74,6 @@ namespace SuggestionApp.Migrations
 
                     SqlServerPropertyBuilderExtensions.UseIdentityColumn(b.Property<int>("RoleId"));
 
-                    b.Property<int?>("DepartmentId")
-                        .HasColumnType("int");
-
-                    b.Property<bool>("IsManager")
-                        .HasColumnType("bit");
-
                     b.Property<string>("RoleName")
                         .IsRequired()
                         .HasColumnType("nvarchar(max)");
@@ -85,8 +82,6 @@ namespace SuggestionApp.Migrations
                         .HasColumnType("bit");
 
                     b.HasKey("RoleId");
-
-                    b.HasIndex("DepartmentId");
 
                     b.ToTable("Roles");
                 });
@@ -197,15 +192,6 @@ namespace SuggestionApp.Migrations
                         .HasForeignKey("SuggestionsSuggestionId")
                         .OnDelete(DeleteBehavior.Cascade)
                         .IsRequired();
-                });
-
-            modelBuilder.Entity("SuggestionApp.Models.Role", b =>
-                {
-                    b.HasOne("SuggestionApp.Models.Department", "Department")
-                        .WithMany()
-                        .HasForeignKey("DepartmentId");
-
-                    b.Navigation("Department");
                 });
 
             modelBuilder.Entity("SuggestionApp.Models.Suggestion", b =>

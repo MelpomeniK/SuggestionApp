@@ -6,9 +6,9 @@ namespace SuggestionApp.Controllers
 {
     public class DepartmentController : Controller
     {
-        private readonly DepartmentServices _departmentServices;
+        private readonly IDepartmentServices _departmentServices;
 
-        public DepartmentController(DepartmentServices departmentServices)
+        public DepartmentController(IDepartmentServices departmentServices)
         {
             _departmentServices = departmentServices;
         }
@@ -55,7 +55,8 @@ namespace SuggestionApp.Controllers
         // GET: /Department/Edit/5
         public async Task<IActionResult> Edit(int id)
         {
-            var department = await _departmentServices.GetDepartmentbyId(id);
+            Department department1 = await _departmentServices.GetDepartmentbyId(id);
+            Department department = department1;
             if (department == null)
             {
                 return NotFound();
@@ -76,8 +77,20 @@ namespace SuggestionApp.Controllers
             if (ModelState.IsValid)
             {
                 var updated = await _departmentServices.UpdateDepartmentAsync(department);
+
                 if (updated != null)
+                {
+                    TempData["SuccessMessage"] = "Department updated successfully!";
                     return RedirectToAction(nameof(Index));
+                }
+                else
+                {
+                    TempData["ErrorMessage"] = "Update failed. Department may not exist.";
+                }
+            }
+            else
+            {
+                TempData["ErrorMessage"] = "Validation failed. Please check your input.";
             }
 
             return View(department);

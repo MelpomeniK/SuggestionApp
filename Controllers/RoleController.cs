@@ -1,60 +1,60 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.AspNetCore.Mvc.Rendering;
 using Microsoft.EntityFrameworkCore;
 using SuggestionApp.Data;
 using SuggestionApp.Models;
+using SuggestionApp.Services;
 
 namespace SuggestionApp.Controllers
 {
     public class RoleController : Controller
     {
         private readonly AppDbContext _context;
+        private readonly IDepartmentServices _departmentServices;
 
-        public RoleController(AppDbContext context)
+        public RoleController(AppDbContext context, IDepartmentServices departmentServices)
         {
             _context = context;
+            _departmentServices = departmentServices;
         }
 
         // GET: Role
         public async Task<IActionResult> Index()
         {
-            return View(await _context.Roles.ToListAsync());
+            var roles = await _context.Roles
+                .Include(r => r.Department) // eager load department
+                .ToListAsync();
+            return View(roles);
         }
 
         // GET: Role/Details/5
         public async Task<IActionResult> Details(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var role = await _context.Roles
-                .FirstOrDefaultAsync(m => m.RoleId == id);
+                .Include(r => r.Department)
+                .FirstOrDefaultAsync(r => r.RoleId == id);
+
             if (role == null)
-            {
                 return NotFound();
-            }
 
             return View(role);
         }
 
         // GET: Role/Create
-        public IActionResult Create()
+        public async Task<IActionResult> Create()
         {
+            var departments = await _departmentServices.GetDepartmentsAsync();
+            ViewBag.Departments = new SelectList(departments, "DepartmentId", "DepartmentName");
             return View();
         }
 
         // POST: Role/Create
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Create([Bind("RoleId,RoleName,isActive")] Role role)
+        public async Task<IActionResult> Create([Bind("RoleId,RoleName,isActive,DepartmentId,IsManager")] Role role)
         {
             if (ModelState.IsValid)
             {
@@ -62,6 +62,10 @@ namespace SuggestionApp.Controllers
                 await _context.SaveChangesAsync();
                 return RedirectToAction(nameof(Index));
             }
+
+            // repopulate dropdown if error
+            var departments = await _departmentServices.GetDepartmentsAsync();
+            ViewBag.Departments = new SelectList(departments, "DepartmentId", "DepartmentName", role.DepartmentId);
             return View(role);
         }
 
@@ -69,29 +73,25 @@ namespace SuggestionApp.Controllers
         public async Task<IActionResult> Edit(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var role = await _context.Roles.FindAsync(id);
             if (role == null)
-            {
                 return NotFound();
-            }
+
+            var departments = await _departmentServices.GetDepartmentsAsync();
+            ViewBag.Departments = new SelectList(departments, "DepartmentId", "DepartmentName", role.DepartmentId);
+
             return View(role);
         }
 
         // POST: Role/Edit/5
-        // To protect from overposting attacks, enable the specific properties you want to bind to.
-        // For more details, see http://go.microsoft.com/fwlink/?LinkId=317598.
         [HttpPost]
         [ValidateAntiForgeryToken]
-        public async Task<IActionResult> Edit(int id, [Bind("RoleId,RoleName,isActive")] Role role)
+        public async Task<IActionResult> Edit(int id, [Bind("RoleId,RoleName,isActive,DepartmentId,IsManager")] Role role)
         {
             if (id != role.RoleId)
-            {
                 return NotFound();
-            }
 
             if (ModelState.IsValid)
             {
@@ -103,16 +103,16 @@ namespace SuggestionApp.Controllers
                 catch (DbUpdateConcurrencyException)
                 {
                     if (!RoleExists(role.RoleId))
-                    {
                         return NotFound();
-                    }
                     else
-                    {
                         throw;
-                    }
                 }
                 return RedirectToAction(nameof(Index));
             }
+
+            var departments = await _departmentServices.GetDepartmentsAsync();
+            ViewBag.Departments = new SelectList(departments, "DepartmentId", "DepartmentName", role.DepartmentId);
+
             return View(role);
         }
 
@@ -120,16 +120,14 @@ namespace SuggestionApp.Controllers
         public async Task<IActionResult> Delete(int? id)
         {
             if (id == null)
-            {
                 return NotFound();
-            }
 
             var role = await _context.Roles
+                .Include(r => r.Department)
                 .FirstOrDefaultAsync(m => m.RoleId == id);
+
             if (role == null)
-            {
                 return NotFound();
-            }
 
             return View(role);
         }
@@ -143,9 +141,8 @@ namespace SuggestionApp.Controllers
             if (role != null)
             {
                 _context.Roles.Remove(role);
+                await _context.SaveChangesAsync();
             }
-
-            await _context.SaveChangesAsync();
             return RedirectToAction(nameof(Index));
         }
 

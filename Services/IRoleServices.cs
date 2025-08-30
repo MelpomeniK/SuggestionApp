@@ -1,4 +1,5 @@
-﻿using SuggestionApp.Models;
+﻿using Microsoft.EntityFrameworkCore;
+using SuggestionApp.Models;
 
 namespace SuggestionApp.Services
 {
@@ -9,5 +10,7 @@ namespace SuggestionApp.Services
         Task<Role?> CreateRoleAsync(Role role);
         Task<Role?> UpdateRoleAsync(Role role);
         Task<bool> DeleteRoleAsync(Role role);
+        Task<int> GetManagerCountAsync();
+
     }
 }

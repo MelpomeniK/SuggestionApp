@@ -45,9 +45,12 @@ namespace SuggestionApp.Services
                 var dep = await _context.Departments.FirstOrDefaultAsync(d => d.DepartmentId == department.DepartmentId);
                 if (dep != null)
                 {
-                    var updep = _context.Departments.Update(department);
+                    dep.DepartmentName = department.DepartmentName;
+                    dep.Description = department.Description;
+                    dep.isActive = department.isActive;
+
                     await _context.SaveChangesAsync();
-                    return department;
+                    return dep;
                 }
                 else
                 {

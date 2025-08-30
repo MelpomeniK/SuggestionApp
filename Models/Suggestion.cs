@@ -7,8 +7,8 @@ namespace SuggestionApp.Models
     {
         public int SuggestionId { get; set; }
         public string? Description { get; set; }
-        public string? ApprovedBy { get; set;  } //αυτό κανονικά σαν τύπος είναι string αλλά τα ονόματα δεν θα τα παίρνουμε από Λίστα int από το user ID? Έχει κάποια σημασία;
-        public bool isApproved { get; set; }
+        public string? ApprovedBy { get; set;  }
+        public bool? isApproved { get; set; }  // nullable bool
         public DateTime CreationDate { get; set; }
         public DateTime ApprovalDate { get; set; }
         public int Likes { get; set; }

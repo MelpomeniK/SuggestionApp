@@ -1,7 +1,5 @@
-using Microsoft.EntityFrameworkCore;
-using System;
+﻿using Microsoft.EntityFrameworkCore;
 using SuggestionApp.Data;
-using SuggestionApp.Models;
 using SuggestionApp.Services;
 
 
@@ -10,15 +8,15 @@ var builder = WebApplication.CreateBuilder(args);
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
-// Add this line to register your AppDbContext
+//Register database context
 builder.Services.AddDbContext<AppDbContext>(options =>
     options.UseSqlServer(builder.Configuration.GetConnectionString("DefaultConnection")));
 
-builder.Services.AddScoped<IRoleServices, RoleServices>();
+//Register services (interface -> implementation)
+builder.Services.AddScoped<IDepartmentServices, DepartmentServices>();
 builder.Services.AddScoped<ISuggestionServices, SuggestionServices>();
 builder.Services.AddScoped<UserServices>();
-builder.Services.AddScoped<DepartmentServices>();
-
+builder.Services.AddScoped<IRoleServices, RoleServices>();
 
 var app = builder.Build();
 

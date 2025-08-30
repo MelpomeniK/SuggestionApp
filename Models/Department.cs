@@ -11,6 +11,7 @@ namespace SuggestionApp.Models
         public string? DepartmentName { get; set; }
         public bool isActive { get; set; }
         public string? Description { get; set; }
+        public string? ManagerName { get; set; }
 
         public ICollection<User> Users { get; set; } = new List<User>();
         public ICollection<Suggestion> Suggestions { get; set; } = new List<Suggestion>();

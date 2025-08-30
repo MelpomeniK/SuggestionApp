@@ -1,31 +1,45 @@
-using System.Diagnostics;
 using Microsoft.AspNetCore.Mvc;
+using SuggestionApp.Services;
 using SuggestionApp.Models;
-
-namespace SuggestionApp.Controllers;
+using SuggestionApp.ViewModels; 
 
 public class HomeController : Controller
 {
-    private readonly ILogger<HomeController> _logger;
+    private readonly IDepartmentServices _departmentServices;
+    private readonly ISuggestionServices _suggestionServices;
+    private readonly IRoleServices _roleServices;
 
-    public HomeController(ILogger<HomeController> logger)
+    public HomeController(
+    IDepartmentServices departmentServices,
+    ISuggestionServices suggestionServices,
+    IRoleServices roleServices) // 
     {
-        _logger = logger;
+        _departmentServices = departmentServices;
+        _suggestionServices = suggestionServices;
+        _roleServices = roleServices; 
     }
 
-    public IActionResult Index()
+    public async Task<IActionResult> Index()
     {
-        return View();
-    }
+        var managerRoleCount = await _roleServices.GetManagerCountAsync();
+        var suggestions = await _suggestionServices.GetSuggestionsAsync();
+        var departments = await _departmentServices.GetDepartmentsAsync();
 
-    public IActionResult Privacy()
-    {
-        return View();
-    }
+        var viewModel = new DashboardViewModel
+        {
+            DepartmentCount = departments.Count,
+            DepartmentManagers = departments
+                .Where(d => !string.IsNullOrWhiteSpace(d.ManagerName))
+                .Select(d => d.ManagerName)
+                .Distinct()
+                .ToList(),
+            TotalSuggestions = suggestions.Count,
+            AcceptedSuggestions = suggestions.Count(s => s.isApproved == true),
+            RejectedSuggestions = suggestions.Count(s => s.isApproved == false),
+            PendingSuggestions = suggestions.Count(s => s.isApproved == null),
+            ManagerRoleCount = managerRoleCount 
+        };
 
-    [ResponseCache(Duration = 0, Location = ResponseCacheLocation.None, NoStore = true)]
-    public IActionResult Error()
-    {
-        return View(new ErrorViewModel { RequestId = Activity.Current?.Id ?? HttpContext.TraceIdentifier });
+        return View(viewModel);
     }
 }
